@@ -10,6 +10,7 @@
 		D0F2ED051B52340700258004 /* Clairvoyant.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F2ED041B52340700258004 /* Clairvoyant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0F2ED0C1B52340700258004 /* Clairvoyant.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0F2ED011B52340700258004 /* Clairvoyant.framework */; };
 		D0F2ED111B52340700258004 /* ClairvoyantTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F2ED101B52340700258004 /* ClairvoyantTests.swift */; };
+		D0F2ED1C1B52343900258004 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F2ED1B1B52343900258004 /* Store.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +30,7 @@
 		D0F2ED0B1B52340700258004 /* ClairvoyantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClairvoyantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0F2ED101B52340700258004 /* ClairvoyantTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClairvoyantTests.swift; sourceTree = "<group>"; };
 		D0F2ED121B52340700258004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D0F2ED1B1B52343900258004 /* Store.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				D0F2ED041B52340700258004 /* Clairvoyant.h */,
+				D0F2ED1B1B52343900258004 /* Store.swift */,
 				D0F2ED061B52340700258004 /* Info.plist */,
 			);
 			path = Clairvoyant;
@@ -142,6 +145,7 @@
 		D0F2ECF81B52340700258004 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Justin Spahr-Summers";
 				TargetAttributes = {
@@ -193,6 +197,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0F2ED1C1B52343900258004 /* Store.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +312,7 @@
 		D0F2ED161B52340700258004 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -317,12 +323,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.jspahrsummers.Clairvoyant;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		D0F2ED171B52340700258004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -375,6 +383,7 @@
 				D0F2ED171B52340700258004 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D0F2ED181B52340700258004 /* Build configuration list for PBXNativeTarget "ClairvoyantTests" */ = {
 			isa = XCConfigurationList;
@@ -383,6 +392,7 @@
 				D0F2ED1A1B52340700258004 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
