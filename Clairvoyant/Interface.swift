@@ -8,18 +8,22 @@
 
 import Foundation
 
-public protocol FactType: Equatable {
+public protocol FactType {
 	typealias Key: Hashable
-	typealias Value: Equatable
+	typealias Value
 
 	var key: Key { get }
 	var value: Value { get }
 }
 
+public func == <Fact: FactType where Fact.Value: Equatable>(lhs: Fact, rhs: Fact) -> Bool {
+	return lhs.key == rhs.key && lhs.value == rhs.value
+}
+
 public protocol TimeType: Comparable {
 }
 
-public enum Event<Fact: FactType, Time: TimeType>: Equatable {
+public enum Event<Fact: FactType, Time: TimeType> {
 	case Assertion(Fact, Time)
 	case Retraction(Fact, Time)
 
@@ -34,7 +38,7 @@ public enum Event<Fact: FactType, Time: TimeType>: Equatable {
 	}
 }
 
-public func == <Fact, Time>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
+public func == <Fact: FactType, Time where Fact.Value: Equatable>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
 	switch (lhs, rhs) {
 	case let (.Assertion(leftFact, leftTime), .Assertion(rightFact, rightTime)):
 		return leftFact == rightFact && leftTime == rightTime
