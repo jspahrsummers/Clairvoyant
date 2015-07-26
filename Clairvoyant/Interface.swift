@@ -8,24 +8,27 @@
 
 import Foundation
 
-public protocol FactType {
+public protocol FactType: Equatable {
 	typealias Key: Hashable
-	typealias Value
+	typealias Value: Equatable
 
 	var key: Key { get }
 	var value: Value { get }
 }
 
-public func == <Fact: FactType where Fact.Value: Equatable>(lhs: Fact, rhs: Fact) -> Bool {
-	return lhs.key == rhs.key && lhs.value == rhs.value
-}
-
-public protocol TimeType: Comparable {
-}
-
-public enum Event<Fact: FactType, Time: TimeType> {
+public enum Event<Fact: FactType, Time: Comparable>: Equatable {
 	case Assertion(Fact, Time)
 	case Retraction(Fact, Time)
+
+	var fact: Fact {
+		switch self {
+		case let .Assertion(fact, _):
+			return fact
+
+		case let .Retraction(fact, _):
+			return fact
+		}
+	}
 
 	var timestamp: Time {
 		switch self {
@@ -38,7 +41,7 @@ public enum Event<Fact: FactType, Time: TimeType> {
 	}
 }
 
-public func == <Fact: FactType, Time where Fact.Value: Equatable>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
+public func == <Fact, Time>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
 	switch (lhs, rhs) {
 	case let (.Assertion(leftFact, leftTime), .Assertion(rightFact, rightTime)):
 		return leftFact == rightFact && leftTime == rightTime
@@ -51,10 +54,13 @@ public func == <Fact: FactType, Time where Fact.Value: Equatable>(lhs: Event<Fac
 	}
 }
 
-public protocol EntityType: Equatable {
+public protocol EntityType {
 	typealias Identifier: Hashable
 	typealias Fact: FactType
-	typealias Time: TimeType
+	typealias Time: Comparable
+
+	var identifier: Identifier { get }
+	var creationTimestamp: Time { get }
 
 	var facts: AnyForwardCollection<Fact> { get }
 	func factsAssertedInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Fact>
@@ -65,10 +71,28 @@ public protocol EntityType: Equatable {
 	subscript(key: Fact.Key) -> Fact? { get }
 }
 
+extension EntityType {
+	internal func factsAssertedInHistory<S: SequenceType where S.Generator.Element == Event<Fact, Time>>(history: S) -> [Fact.Key: Fact] {
+		var facts: [Fact.Key: Fact] = [:]
+
+		for event in history {
+			switch event {
+			case let .Assertion(fact, _):
+				facts[fact.key] = fact
+
+			case let .Retraction(fact, _):
+				facts.removeValueForKey(fact.key)
+			}
+		}
+
+		return facts
+	}
+}
+
 public protocol TransactionType {
 	typealias Entity: EntityType
 
-	var timestamp: Entity.Time { get }
+	var openedTimestamp: Entity.Time { get }
 
 	var entities: AnyForwardCollection<Entity> { get }
 	func entitiesCreatedInTimeInterval(interval: HalfOpenInterval<Entity.Time>) -> AnyForwardCollection<Entity>
@@ -83,7 +107,7 @@ public protocol TransactionType {
 public protocol StoreType {
 	typealias Transaction: TransactionType
 
-	func openTransaction() -> Transaction
+	func newTransaction() throws -> Transaction
 
-	mutating func saveTransaction(transaction: Transaction) throws
+	mutating func commitTransaction(transaction: Transaction) throws
 }
