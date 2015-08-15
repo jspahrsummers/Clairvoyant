@@ -117,26 +117,38 @@ public protocol EntityType {
 	/// Multiple entities may have the same `creationTimestamp`.
 	var creationTimestamp: Time { get }
 
+	/// A list of all events that have occurred to this entity, in ascending
+	/// timestamp order.
+	var history: AnyForwardCollection<Event<Fact, Time>> { get }
+}
+
+extension EntityType {
+	/// A list of all events that occurred to this entity within the given time
+	/// interval, in ascending order.
+	public func historyInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Event<Fact, Time>> {
+		let filteredEvents = history.filter { interval.contains($0.timestamp) }
+		return AnyForwardCollection(filteredEvents)
+	}
+
 	/// A list of all "current" facts that have been asserted about this entity
 	/// and not yet retracted, in ascending timestamp order.
-	var facts: AnyForwardCollection<Fact> { get }
+	public var facts: AnyForwardCollection<Fact> {
+		return AnyForwardCollection(sortedFactsAssertedInHistory(history))
+	}
 
 	/// Returns all "current" facts that were asserted about this entity within
 	/// the given time interval, and that have not yet been retracted, in
 	/// ascending timestamp order.
-	func factsAssertedInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Fact>
-
-	/// A list of all events that have occurred to this entity, in ascending
-	/// timestamp order.
-	var history: AnyForwardCollection<Event<Fact, Time>> { get }
-
-	/// A list of all events that occurred to this entity within the given time
-	/// interval, in ascending order.
-	func historyInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Event<Fact, Time>>
+	public func factsAssertedInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Fact> {
+		let filteredHistory = historyInTimeInterval(interval)
+		return AnyForwardCollection(sortedFactsAssertedInHistory(filteredHistory))
+	}
 
 	/// Looks up the given key within this entity's `facts`, returning any fact
 	/// with a matching key that has been asserted and not yet retracted.
-	subscript(key: Fact.Key) -> Fact? { get }
+	public subscript(key: Fact.Key) -> Fact? {
+		return factsByKeyAssertedInHistory(history)[key].map { event in event.fact }
+	}
 }
 
 /// Returns the keys of all facts that were asserted (and not retracted) in the
@@ -197,14 +209,6 @@ public protocol TransactionType {
 	/// transactions since this one was opened.
 	var entities: AnyForwardCollection<Entity> { get }
 
-	/// Returns a list of entities that were created within the given time
-	/// interval, in ascending order of `creationTimestamp`.
-	///
-	/// The entities returned in this way will include any changes made inside
-	/// this transaction, but will not include changes made by other
-	/// transactions since this one was opened.
-	func entitiesCreatedInTimeInterval(interval: HalfOpenInterval<Entity.Time>) -> AnyForwardCollection<Entity>
-
 	/// Creates a new entity, having the given unique identifier, and asserts
 	/// the given list of facts about it immediately.
 	///
@@ -238,6 +242,19 @@ public protocol TransactionType {
 
 	/// Attempts to find an entity having the given identifier.
 	subscript(identifier: Entity.Identifier) -> Entity? { get }
+}
+
+extension TransactionType {
+	/// Returns a list of entities that were created within the given time
+	/// interval, in ascending order of `creationTimestamp`.
+	///
+	/// The entities returned in this way will include any changes made inside
+	/// this transaction, but will not include changes made by other
+	/// transactions since this one was opened.
+	public func entitiesCreatedInTimeInterval(interval: HalfOpenInterval<Entity.Time>) -> AnyForwardCollection<Entity> {
+		let filteredEntities = entities.filter { interval.contains($0.creationTimestamp) }
+		return AnyForwardCollection(filteredEntities)
+	}
 }
 
 /// Represents a concrete database store.

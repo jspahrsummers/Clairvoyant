@@ -197,26 +197,8 @@ public struct ArchiveEntity<Value: Archivable where Value: Hashable>: EntityType
 		events = []
 	}
 
-	public var facts: AnyForwardCollection<Fact> {
-		return AnyForwardCollection(sortedFactsAssertedInHistory(history))
-	}
-
-	public func factsAssertedInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Fact> {
-		let filteredHistory = historyInTimeInterval(interval)
-		return AnyForwardCollection(sortedFactsAssertedInHistory(filteredHistory))
-	}
-
 	public var history: AnyForwardCollection<Event<Fact, Time>> {
 		return AnyForwardCollection(events)
-	}
-
-	public func historyInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Event<Fact, Time>> {
-		let filteredEvents = events.filter { interval.contains($0.timestamp) }
-		return AnyForwardCollection(filteredEvents)
-	}
-
-	public subscript(key: Fact.Key) -> Fact? {
-		return factsByKeyAssertedInHistory(history)[key].map { event in event.fact }
 	}
 }
 
@@ -289,11 +271,6 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 
 	public var entities: AnyForwardCollection<Entity> {
 		return AnyForwardCollection(entitiesByIdentifier.values)
-	}
-
-	public func entitiesCreatedInTimeInterval(interval: HalfOpenInterval<Entity.Time>) -> AnyForwardCollection<Entity> {
-		let filteredEntities = entities.filter { interval.contains($0.creationTimestamp) }
-		return AnyForwardCollection(filteredEntities)
 	}
 
 	public mutating func createEntity(identifier: Entity.Identifier, facts: [Entity.Fact]) throws -> Entity {
