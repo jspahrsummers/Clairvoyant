@@ -190,7 +190,7 @@ public struct ArchiveEntity<Value: Archivable where Value: Hashable>: EntityType
 	}
 
 	public subscript(key: Fact.Key) -> Fact? {
-		return factsAssertedInHistory(history)[key].map { event in event.fact }
+		return factsByKeyAssertedInHistory(history)[key].map { event in event.fact }
 	}
 }
 
@@ -276,6 +276,20 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 		}
 
 		var entity = Entity(identifier: identifier, creationTimestamp: openedTimestamp)
+		try assertFacts(facts, forEntity: &entity)
+
+		return entity
+	}
+
+	public mutating func assertFacts(facts: [Entity.Fact], forEntityWithIdentifier identifier: Entity.Identifier) throws {
+		guard var entity = entitiesByIdentifier[identifier] else {
+			throw ArchiveStoreError<Value>.NoSuchEntity(identifier: identifier)
+		}
+
+		try assertFacts(facts, forEntity: &entity)
+	}
+
+	private mutating func assertFacts(facts: [Entity.Fact], inout forEntity entity: Entity) throws {
 		for fact in facts {
 			guard !entity.facts.contains(fact) else {
 				throw ArchiveStoreError<Value>.FactValidationError(fact: fact, onEntity: entity)
@@ -284,33 +298,22 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 			entity.events.append(.Assertion(fact, openedTimestamp))
 		}
 
-		entitiesByIdentifier[identifier] = entity
-		return entity
+		entitiesByIdentifier[entity.identifier] = entity
 	}
 
-	public mutating func assertFact(fact: Entity.Fact, forEntityWithIdentifier identifier: Entity.Identifier) throws {
+	public mutating func retractFacts(facts: [Entity.Fact], forEntityWithIdentifier identifier: Entity.Identifier) throws {
 		guard var entity = entitiesByIdentifier[identifier] else {
 			throw ArchiveStoreError<Value>.NoSuchEntity(identifier: identifier)
 		}
 
-		guard !entity.facts.contains(fact) else {
-			throw ArchiveStoreError<Value>.FactValidationError(fact: fact, onEntity: entity)
+		for fact in facts {
+			guard entity.facts.contains(fact) else {
+				throw ArchiveStoreError<Value>.FactValidationError(fact: fact, onEntity: entity)
+			}
+
+			entity.events.append(.Retraction(fact, openedTimestamp))
 		}
 
-		entity.events.append(.Assertion(fact, openedTimestamp))
-		entitiesByIdentifier[identifier] = entity
-	}
-
-	public mutating func retractFact(fact: Entity.Fact, forEntityWithIdentifier identifier: Entity.Identifier) throws {
-		guard var entity = entitiesByIdentifier[identifier] else {
-			throw ArchiveStoreError<Value>.NoSuchEntity(identifier: identifier)
-		}
-
-		guard entity.facts.contains(fact) else {
-			throw ArchiveStoreError<Value>.FactValidationError(fact: fact, onEntity: entity)
-		}
-
-		entity.events.append(.Retraction(fact, openedTimestamp))
 		entitiesByIdentifier[identifier] = entity
 	}
 

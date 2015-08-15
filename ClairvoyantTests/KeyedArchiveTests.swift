@@ -29,7 +29,7 @@ class KeyedArchiveTests: XCTestCase {
 			XCTAssertEqual(entity.creationTimestamp, transaction.openedTimestamp)
 			XCTAssertEqual(Array(entity.facts), [ name ])
 
-			try transaction.assertFact(email, forEntityWithIdentifier: entity.identifier)
+			try transaction.assertFacts([ email ], forEntityWithIdentifier: entity.identifier)
 			try store.commitTransaction(transaction)
 		} catch (let error) {
 			XCTFail(String(error))
