@@ -1,6 +1,6 @@
 //
-//  KeyedArchiveTests.swift
-//  KeyedArchiveTests
+//  ArchiveStoreTests.swift
+//  ClairvoyantTests
 //
 //  Created by Justin Spahr-Summers on 2015-07-11.
 //  Copyright © 2015 Justin Spahr-Summers. All rights reserved.
@@ -9,7 +9,7 @@
 import Clairvoyant
 import XCTest
 
-class KeyedArchiveTests: XCTestCase {
+class ArchiveStoreTests: XCTestCase {
 	func testArchiveStore() {
 		let temporaryDirectoryURL = NSURL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
 		let storeURL = temporaryDirectoryURL.URLByAppendingPathComponent(NSUUID().UUIDString).URLByAppendingPathExtension("plist")

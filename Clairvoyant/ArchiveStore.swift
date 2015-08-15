@@ -1,5 +1,5 @@
 //
-//  KeyedArchiveStore.swift
+//  ArchiveStore.swift
 //  Clairvoyant
 //
 //  Created by Justin Spahr-Summers on 2015-07-25.
@@ -8,17 +8,41 @@
 
 import Foundation
 
+/// Represents anything which can be encoded into an archive.
+///
+/// This is very much like the built-in <NSCoding> protocol, but is stateless
+/// and supports native Swift types.
 public protocol Archivable {
-	init?(coderRepresentation: AnyObject)
-	var coderRepresentation: AnyObject { get }
+	/// Attempts to initialize a value of this type using an object which was
+	/// read from an NSCoder.
+	init?(coderRepresentation: NSCoding)
+
+	/// Serializes this value into an object that can be written using an
+	/// NSCoder.
+	var coderRepresentation: NSCoding { get }
 }
 
+/// Errors that can occur when using an ArchiveStore or ArchiveTransaction.
 public enum ArchiveStoreError<Value: Archivable where Value: Hashable>: ErrorType {
+	/// No entity with the specified identifier exists.
 	case NoSuchEntity(identifier: ArchiveEntity<Value>.Identifier)
+
+	/// Creating an entity failed because another entity already exists with the
+	/// same identifier.
 	case EntityAlreadyExists(existingEntity: ArchiveEntity<Value>)
+
+	/// The given fact could not be asserted or retracted because the necessary
+	/// preconditions were not met.
 	case FactValidationError(fact: ArchiveFact<Value>, onEntity: ArchiveEntity<Value>)
+
+	/// The specified transaction cannot be committed, because another
+	/// transaction was successfully committed after the former was opened.
 	case TransactionCommitConflict(attemptedTransaction: ArchiveTransaction<Value>)
+
+	/// There was an error unarchiving the store from a file at the given URL.
 	case ReadError(storeURL: NSURL)
+
+	/// There was an error archiving the store to a file at the given URL.
 	case WriteError(storeURL: NSURL)
 }
 
@@ -43,7 +67,7 @@ public func == <Value>(lhs: ArchiveFact<Value>, rhs: ArchiveFact<Value>) -> Bool
 }
 
 extension ArchiveFact: Archivable {
-	public init?(coderRepresentation: AnyObject) {
+	public init?(coderRepresentation: NSCoding) {
 		guard let dictionary = coderRepresentation as? NSDictionary else {
 			return nil
 		}
@@ -56,14 +80,14 @@ extension ArchiveFact: Archivable {
 			return nil
 		}
 
-		guard let value = Value(coderRepresentation: archivedValue) else {
+		guard let value = Value(coderRepresentation: archivedValue as! NSCoding) else {
 			return nil
 		}
 
 		self.init(key: key, value: value)
 	}
 
-	public var coderRepresentation: AnyObject {
+	public var coderRepresentation: NSCoding {
 		return [
 			"key": self.key,
 			"value": self.value.coderRepresentation
@@ -72,7 +96,7 @@ extension ArchiveFact: Archivable {
 }
 
 extension String: Archivable {
-	public init?(coderRepresentation: AnyObject) {
+	public init?(coderRepresentation: NSCoding) {
 		guard let string = coderRepresentation as? String else {
 			return nil
 		}
@@ -80,13 +104,13 @@ extension String: Archivable {
 		self.init(string)
 	}
 
-	public var coderRepresentation: AnyObject {
+	public var coderRepresentation: NSCoding {
 		return self
 	}
 }
 
 extension UInt: Archivable {
-	public init?(coderRepresentation: AnyObject) {
+	public init?(coderRepresentation: NSCoding) {
 		guard let number = coderRepresentation as? NSNumber else {
 			return nil
 		}
@@ -94,12 +118,13 @@ extension UInt: Archivable {
 		self.init(number)
 	}
 
-	public var coderRepresentation: AnyObject {
+	public var coderRepresentation: NSCoding {
 		return self
 	}
 }
 
-private func eventWithCoderRepresentation<Value: Archivable>(coderRepresentation: AnyObject) -> Event<ArchiveFact<Value>, ArchiveEntity<Value>.Time>? {
+/// Attempts to unarchive an Event from the given object.
+private func eventWithCoderRepresentation<Value: Archivable>(coderRepresentation: NSCoding) -> Event<ArchiveFact<Value>, ArchiveEntity<Value>.Time>? {
 	guard let dictionary = coderRepresentation as? NSDictionary else {
 		return nil
 	}
@@ -112,7 +137,7 @@ private func eventWithCoderRepresentation<Value: Archivable>(coderRepresentation
 		return nil
 	}
 
-	guard let fact = ArchiveFact<Value>(coderRepresentation: archivedFact) else {
+	guard let fact = ArchiveFact<Value>(coderRepresentation: archivedFact as! NSCoding) else {
 		return nil
 	}
 
@@ -120,7 +145,7 @@ private func eventWithCoderRepresentation<Value: Archivable>(coderRepresentation
 		return nil
 	}
 
-	guard let time = ArchiveEntity<Value>.Time(coderRepresentation: archivedTime) else {
+	guard let time = ArchiveEntity<Value>.Time(coderRepresentation: archivedTime as! NSCoding) else {
 		return nil
 	}
 
@@ -136,7 +161,8 @@ private func eventWithCoderRepresentation<Value: Archivable>(coderRepresentation
 	}
 }
 
-private func coderRepresentationOfEvent<Value: Archivable>(event: Event<ArchiveFact<Value>, ArchiveEntity<Value>.Time>) -> AnyObject {
+/// Archives an event into an object that can be encoded.
+private func coderRepresentationOfEvent<Value: Archivable>(event: Event<ArchiveFact<Value>, ArchiveEntity<Value>.Time>) -> NSCoding {
 	let type: String
 
 	switch event {
@@ -195,7 +221,7 @@ public struct ArchiveEntity<Value: Archivable where Value: Hashable>: EntityType
 }
 
 extension ArchiveEntity: Archivable {
-	public init?(coderRepresentation: AnyObject) {
+	public init?(coderRepresentation: NSCoding) {
 		guard let dictionary = coderRepresentation as? NSDictionary else {
 			return nil
 		}
@@ -208,7 +234,7 @@ extension ArchiveEntity: Archivable {
 			return nil
 		}
 
-		guard let time = Time(coderRepresentation: archivedTime) else {
+		guard let time = Time(coderRepresentation: archivedTime as! NSCoding) else {
 			return nil
 		}
 
@@ -222,7 +248,7 @@ extension ArchiveEntity: Archivable {
 		events = []
 
 		for archivedEvent in archivedEvents {
-			guard let event: Event<Fact, Time> = eventWithCoderRepresentation(archivedEvent) else {
+			guard let event: Event<Fact, Time> = eventWithCoderRepresentation(archivedEvent as! NSCoding) else {
 				return nil
 			}
 
@@ -230,7 +256,7 @@ extension ArchiveEntity: Archivable {
 		}
 	}
 
-	public var coderRepresentation: AnyObject {
+	public var coderRepresentation: NSCoding {
 		let archivedEvents = events.map(coderRepresentationOfEvent) as NSArray
 
 		return [
@@ -253,7 +279,7 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 
 		entitiesByIdentifier = [:]
 		for archivedEntity in archivedEntities {
-			guard let entity = Entity(coderRepresentation: archivedEntity) else {
+			guard let entity = Entity(coderRepresentation: archivedEntity as! NSCoding) else {
 				return nil
 			}
 
@@ -322,6 +348,14 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 	}
 }
 
+/// A database store backed by NSKeyedArchiver, and written into a property list
+/// on disk.
+///
+/// `ArchiveStore`s do not support conflict resolution. Any transaction making
+/// changes should be committed before opening another transaction to make
+/// changes, or else a conflict could result in the second transaction being
+/// rejected at commit time. Any number of read-only transactions can be open
+/// while making changes, without issue.
 public final class ArchiveStore<Value: Archivable where Value: Hashable>: StoreType {
 	public typealias Transaction = ArchiveTransaction<Value>
 
@@ -330,6 +364,11 @@ public final class ArchiveStore<Value: Archivable where Value: Hashable>: StoreT
 	private var transactionTimestamp: Transaction.Entity.Time
 	private var archivedEntities: NSArray
 
+	/// Opens a database store that will read from and write to a property list
+	/// at the given file URL.
+	///
+	/// If the file does not exist yet, it will be created the first time
+	/// a transaction is committed.
 	public init?(storeURL: NSURL) {
 		precondition(storeURL.fileURL)
 
@@ -345,7 +384,7 @@ public final class ArchiveStore<Value: Archivable where Value: Hashable>: StoreT
 			let dictionary = unarchivedObject as? NSDictionary,
 			let entities = dictionary["entities"] as? NSArray,
 			let archivedTimestamp = dictionary["timestamp"],
-			let timestamp = Transaction.Entity.Time(coderRepresentation: archivedTimestamp)
+			let timestamp = Transaction.Entity.Time(coderRepresentation: archivedTimestamp as! NSCoding)
 		else {
 			archivedEntities = []
 			transactionTimestamp = 0

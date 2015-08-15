@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D07F6F7D1B64664800043C39 /* KeyedArchiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07F6F7C1B64664800043C39 /* KeyedArchiveStore.swift */; };
+		D07F6F7D1B64664800043C39 /* ArchiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07F6F7C1B64664800043C39 /* ArchiveStore.swift */; };
 		D0F2ED051B52340700258004 /* Clairvoyant.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F2ED041B52340700258004 /* Clairvoyant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0F2ED0C1B52340700258004 /* Clairvoyant.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0F2ED011B52340700258004 /* Clairvoyant.framework */; };
-		D0F2ED111B52340700258004 /* KeyedArchiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F2ED101B52340700258004 /* KeyedArchiveTests.swift */; };
+		D0F2ED111B52340700258004 /* ArchiveStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F2ED101B52340700258004 /* ArchiveStoreTests.swift */; };
 		D0F2ED1E1B5234CE00258004 /* Interface.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F2ED1D1B5234CE00258004 /* Interface.swift */; };
 /* End PBXBuildFile section */
 
@@ -25,12 +25,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		D07F6F7C1B64664800043C39 /* KeyedArchiveStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyedArchiveStore.swift; sourceTree = "<group>"; };
+		D07F6F7C1B64664800043C39 /* ArchiveStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveStore.swift; sourceTree = "<group>"; };
 		D0F2ED011B52340700258004 /* Clairvoyant.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clairvoyant.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0F2ED041B52340700258004 /* Clairvoyant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Clairvoyant.h; sourceTree = "<group>"; };
 		D0F2ED061B52340700258004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0F2ED0B1B52340700258004 /* ClairvoyantTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ClairvoyantTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		D0F2ED101B52340700258004 /* KeyedArchiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyedArchiveTests.swift; sourceTree = "<group>"; };
+		D0F2ED101B52340700258004 /* ArchiveStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveStoreTests.swift; sourceTree = "<group>"; };
 		D0F2ED121B52340700258004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D0F2ED1D1B5234CE00258004 /* Interface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Interface.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -77,7 +77,7 @@
 			children = (
 				D0F2ED041B52340700258004 /* Clairvoyant.h */,
 				D0F2ED1D1B5234CE00258004 /* Interface.swift */,
-				D07F6F7C1B64664800043C39 /* KeyedArchiveStore.swift */,
+				D07F6F7C1B64664800043C39 /* ArchiveStore.swift */,
 				D0F2ED061B52340700258004 /* Info.plist */,
 			);
 			path = Clairvoyant;
@@ -86,7 +86,7 @@
 		D0F2ED0F1B52340700258004 /* ClairvoyantTests */ = {
 			isa = PBXGroup;
 			children = (
-				D0F2ED101B52340700258004 /* KeyedArchiveTests.swift */,
+				D0F2ED101B52340700258004 /* ArchiveStoreTests.swift */,
 				D0F2ED121B52340700258004 /* Info.plist */,
 			);
 			path = ClairvoyantTests;
@@ -201,7 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D0F2ED1E1B5234CE00258004 /* Interface.swift in Sources */,
-				D07F6F7D1B64664800043C39 /* KeyedArchiveStore.swift in Sources */,
+				D07F6F7D1B64664800043C39 /* ArchiveStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -209,7 +209,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D0F2ED111B52340700258004 /* KeyedArchiveTests.swift in Sources */,
+				D0F2ED111B52340700258004 /* ArchiveStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
