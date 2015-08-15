@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D044FDAF1B7FC75D001274E2 /* MemoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D044FDAE1B7FC75D001274E2 /* MemoryStore.swift */; };
 		D07F6F7D1B64664800043C39 /* ArchiveStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D07F6F7C1B64664800043C39 /* ArchiveStore.swift */; };
 		D0F2ED051B52340700258004 /* Clairvoyant.h in Headers */ = {isa = PBXBuildFile; fileRef = D0F2ED041B52340700258004 /* Clairvoyant.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0F2ED0C1B52340700258004 /* Clairvoyant.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D0F2ED011B52340700258004 /* Clairvoyant.framework */; };
@@ -25,6 +26,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		D044FDAE1B7FC75D001274E2 /* MemoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryStore.swift; sourceTree = "<group>"; };
 		D07F6F7C1B64664800043C39 /* ArchiveStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveStore.swift; sourceTree = "<group>"; };
 		D0F2ED011B52340700258004 /* Clairvoyant.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Clairvoyant.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D0F2ED041B52340700258004 /* Clairvoyant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Clairvoyant.h; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				D0F2ED041B52340700258004 /* Clairvoyant.h */,
 				D0F2ED1D1B5234CE00258004 /* Interface.swift */,
 				D07F6F7C1B64664800043C39 /* ArchiveStore.swift */,
+				D044FDAE1B7FC75D001274E2 /* MemoryStore.swift */,
 				D0F2ED061B52340700258004 /* Info.plist */,
 			);
 			path = Clairvoyant;
@@ -202,6 +205,7 @@
 			files = (
 				D0F2ED1E1B5234CE00258004 /* Interface.swift in Sources */,
 				D07F6F7D1B64664800043C39 /* ArchiveStore.swift in Sources */,
+				D044FDAF1B7FC75D001274E2 /* MemoryStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

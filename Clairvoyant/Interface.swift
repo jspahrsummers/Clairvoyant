@@ -95,6 +95,8 @@ extension Event: Hashable {
 }
 
 /// An immutable view of a database entity as seen at a specific point in time.
+///
+/// All concrete implementations of EntityType are thread-safe.
 public protocol EntityType {
 	/// The type of unique identifier used for entities of this type.
 	typealias Identifier: Hashable
@@ -194,6 +196,11 @@ public func sortedFactsAssertedInHistory<Fact: FactType, Time: Comparable, S: Se
 /// can be used as a "scratch pad" for changes, and then those changes can be
 /// thrown away (by releasing the transaction) instead of being saved to the
 /// database.
+///
+/// The thread-safety of a TransactionType depends on the specific
+/// implementation. For maximum compatibility, perform all operations on
+/// a transaction from a single thread. However, separate transactions can
+/// always be used concurrently on separate threads.
 public protocol TransactionType {
 	/// The type of entity accessible through a transaction of this type.
 	typealias Entity: EntityType
@@ -201,8 +208,8 @@ public protocol TransactionType {
 	/// The database timestamp at which the transaction was opened.
 	var openedTimestamp: Entity.Time { get }
 
-	/// A list of all entities in the database, as seen by this transaction, in
-	/// ascending order of `creationTimestamp`.
+	/// A list of all entities in the database, as seen by this transaction. The
+	/// ordering is implementation-defined.
 	///
 	/// The entities returned in this way will include any changes made inside
 	/// this transaction, but will not include changes made by other
@@ -258,6 +265,10 @@ extension TransactionType {
 }
 
 /// Represents a concrete database store.
+///
+/// The thread-safety of a StoreType depends on the specific implementation. For
+/// maximum compatibility, perform all invocations of newTransaction() and
+/// commitTransaction() on a single thread.
 public protocol StoreType {
 	/// The type of transaction used for this database store.
 	typealias Transaction: TransactionType

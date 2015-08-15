@@ -328,7 +328,7 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 /// A database store backed by NSKeyedArchiver, and written into a property list
 /// on disk.
 ///
-/// `ArchiveStore`s do not support conflict resolution. Any transaction making
+/// ArchiveStores do not support conflict resolution. Any transaction making
 /// changes should be committed before opening another transaction to make
 /// changes, or else a conflict could result in the second transaction being
 /// rejected at commit time. Any number of read-only transactions can be open
@@ -385,8 +385,8 @@ public final class ArchiveStore<Value: Archivable where Value: Hashable>: StoreT
 			throw ArchiveStoreError<Value>.TransactionCommitConflict(attemptedTransaction: transaction)
 		}
 
-		transactionTimestamp++
 		archivedEntities = transaction.entities.map { $0.coderRepresentation }
+		transactionTimestamp++
 
 		let dictionary: NSDictionary = [
 			"entities": archivedEntities,
