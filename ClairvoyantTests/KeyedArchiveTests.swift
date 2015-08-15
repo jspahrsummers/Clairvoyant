@@ -15,8 +15,8 @@ class KeyedArchiveTests: XCTestCase {
 		let storeURL = temporaryDirectoryURL.URLByAppendingPathComponent(NSUUID().UUIDString).URLByAppendingPathExtension("plist")
 		print("Store path: \(storeURL.path!)")
 
-		let nameFact = ArchiveFact(key: "name", value: "Justin Spahr-Summers")
-		let emailFact = ArchiveFact(key: "email", value: "justin@jspahrsummers.com")
+		let name = ArchiveFact(key: "name", value: "Justin Spahr-Summers")
+		let email = ArchiveFact(key: "email", value: "justin@jspahrsummers.com")
 
 		do {
 			let store: ArchiveStore<String>! = ArchiveStore(storeURL: storeURL)
@@ -25,12 +25,11 @@ class KeyedArchiveTests: XCTestCase {
 			var transaction = try store.newTransaction()
 			XCTAssertEqual(transaction.openedTimestamp, 0)
 
-			let entity = try transaction.createEntity("jspahrsummers")
+			let entity = try transaction.createEntity("jspahrsummers", facts: [ name ])
 			XCTAssertEqual(entity.creationTimestamp, transaction.openedTimestamp)
+			XCTAssertEqual(Array(entity.facts), [ name ])
 
-			try transaction.assertFact(nameFact, forEntityWithIdentifier: entity.identifier)
-			try transaction.assertFact(emailFact, forEntityWithIdentifier: entity.identifier)
-
+			try transaction.assertFact(email, forEntityWithIdentifier: entity.identifier)
 			try store.commitTransaction(transaction)
 		} catch (let error) {
 			XCTFail(String(error))
@@ -49,11 +48,14 @@ class KeyedArchiveTests: XCTestCase {
 			
 			let facts = Set(entity.facts)
 			let expectedFacts: Set<ArchiveFact<String>> = [
-				nameFact,
-				emailFact,
+				name,
+				email,
 			]
 
 			XCTAssertEqual(facts, expectedFacts)
+
+			XCTAssertEqual(entity["name"]!, name)
+			XCTAssertEqual(entity["email"]!, email)
 		} catch (let error) {
 			XCTFail(String(error))
 		}

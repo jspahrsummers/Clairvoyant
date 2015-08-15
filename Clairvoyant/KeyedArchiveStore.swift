@@ -270,12 +270,20 @@ public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: Trans
 		return AnyForwardCollection(filteredEntities)
 	}
 
-	public mutating func createEntity(identifier: Entity.Identifier) throws -> Entity {
+	public mutating func createEntity(identifier: Entity.Identifier, facts: [Entity.Fact]) throws -> Entity {
 		if let existingEntity = entitiesByIdentifier[identifier] {
 			throw ArchiveStoreError<Value>.EntityAlreadyExists(existingEntity: existingEntity)
 		}
 
-		let entity = Entity(identifier: identifier, creationTimestamp: openedTimestamp)
+		var entity = Entity(identifier: identifier, creationTimestamp: openedTimestamp)
+		for fact in facts {
+			guard !entity.facts.contains(fact) else {
+				throw ArchiveStoreError<Value>.FactValidationError(fact: fact, onEntity: entity)
+			}
+
+			entity.events.append(.Assertion(fact, openedTimestamp))
+		}
+
 		entitiesByIdentifier[identifier] = entity
 		return entity
 	}

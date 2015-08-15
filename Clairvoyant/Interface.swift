@@ -111,7 +111,7 @@ public protocol TransactionType {
 	var entities: AnyForwardCollection<Entity> { get }
 	func entitiesCreatedInTimeInterval(interval: HalfOpenInterval<Entity.Time>) -> AnyForwardCollection<Entity>
 
-	mutating func createEntity(identifier: Entity.Identifier) throws -> Entity
+	mutating func createEntity(identifier: Entity.Identifier, facts: [Entity.Fact]) throws -> Entity
 	mutating func assertFact(fact: Entity.Fact, forEntityWithIdentifier: Entity.Identifier) throws
 	mutating func retractFact(fact: Entity.Fact, forEntityWithIdentifier: Entity.Identifier) throws
 
