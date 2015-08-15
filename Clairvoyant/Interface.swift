@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol FactType: Equatable {
+public protocol FactType: Hashable {
 	typealias Key: Hashable
 	typealias Value: Equatable
 
@@ -16,7 +16,7 @@ public protocol FactType: Equatable {
 	var value: Value { get }
 }
 
-public enum Event<Fact: FactType, Time: Comparable>: Equatable {
+public enum Event<Fact: FactType, Time: Comparable>: Equatable, Comparable {
 	case Assertion(Fact, Time)
 	case Retraction(Fact, Time)
 
@@ -41,6 +41,10 @@ public enum Event<Fact: FactType, Time: Comparable>: Equatable {
 	}
 }
 
+public func < <Fact, Time>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
+	return lhs.timestamp < rhs.timestamp
+}
+
 public func == <Fact, Time>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> Bool {
 	switch (lhs, rhs) {
 	case let (.Assertion(leftFact, leftTime), .Assertion(rightFact, rightTime)):
@@ -51,6 +55,12 @@ public func == <Fact, Time>(lhs: Event<Fact, Time>, rhs: Event<Fact, Time>) -> B
 	
 	default:
 		return false
+	}
+}
+
+extension Event: Hashable {
+	public var hashValue: Int {
+		return fact.hashValue
 	}
 }
 
@@ -72,13 +82,13 @@ public protocol EntityType {
 }
 
 extension EntityType {
-	internal func factsAssertedInHistory<S: SequenceType where S.Generator.Element == Event<Fact, Time>>(history: S) -> [Fact.Key: Fact] {
-		var facts: [Fact.Key: Fact] = [:]
+	internal func factsAssertedInHistory<S: SequenceType where S.Generator.Element == Event<Fact, Time>>(history: S) -> [Fact.Key: Event<Fact, Time>] {
+		var facts: [Fact.Key: Event<Fact, Time>] = [:]
 
 		for event in history {
 			switch event {
 			case let .Assertion(fact, _):
-				facts[fact.key] = fact
+				facts[fact.key] = event
 
 			case let .Retraction(fact, _):
 				facts.removeValueForKey(fact.key)
@@ -86,6 +96,10 @@ extension EntityType {
 		}
 
 		return facts
+	}
+
+	internal func sortedFactsAssertedInHistory<S: SequenceType where S.Generator.Element == Event<Fact, Time>>(history: S) -> [Fact] {
+		return factsAssertedInHistory(history).values.sort().map { event in event.fact }
 	}
 }
 

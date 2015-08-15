@@ -13,7 +13,7 @@ public protocol Archivable {
 	var coderRepresentation: AnyObject { get }
 }
 
-public enum ArchiveStoreError<Value: Archivable where Value: Equatable>: ErrorType {
+public enum ArchiveStoreError<Value: Archivable where Value: Hashable>: ErrorType {
 	case NoSuchEntity(identifier: ArchiveEntity<Value>.Identifier)
 	case EntityAlreadyExists(existingEntity: ArchiveEntity<Value>)
 	case FactValidationError(fact: ArchiveFact<Value>, onEntity: ArchiveEntity<Value>)
@@ -22,15 +22,19 @@ public enum ArchiveStoreError<Value: Archivable where Value: Equatable>: ErrorTy
 	case WriteError(storeURL: NSURL)
 }
 
-public struct ArchiveFact<Value: Archivable where Value: Equatable>: FactType {
+public struct ArchiveFact<Value: Archivable where Value: Hashable>: FactType {
 	public typealias Key = String
 
 	public let key: Key
 	public let value: Value
 
-	private init(key: Key, value: Value) {
+	public init(key: Key, value: Value) {
 		self.key = key
 		self.value = value
+	}
+
+	public var hashValue: Int {
+		return key.hashValue ^ value.hashValue
 	}
 }
 
@@ -64,6 +68,20 @@ extension ArchiveFact: Archivable {
 			"key": self.key,
 			"value": self.value.coderRepresentation
 		]
+	}
+}
+
+extension String: Archivable {
+	public init?(coderRepresentation: AnyObject) {
+		guard let string = coderRepresentation as? String else {
+			return nil
+		}
+
+		self.init(string)
+	}
+
+	public var coderRepresentation: AnyObject {
+		return self
 	}
 }
 
@@ -136,7 +154,7 @@ private func coderRepresentationOfEvent<Value: Archivable>(event: Event<ArchiveF
 	]
 }
 
-public struct ArchiveEntity<Value: Archivable where Value: Equatable>: EntityType {
+public struct ArchiveEntity<Value: Archivable where Value: Hashable>: EntityType {
 	public typealias Identifier = String
 	public typealias Fact = ArchiveFact<Value>
 	public typealias Time = UInt
@@ -154,12 +172,12 @@ public struct ArchiveEntity<Value: Archivable where Value: Equatable>: EntityTyp
 	}
 
 	public var facts: AnyForwardCollection<Fact> {
-		return AnyForwardCollection(factsAssertedInHistory(history).values)
+		return AnyForwardCollection(sortedFactsAssertedInHistory(history))
 	}
 
 	public func factsAssertedInTimeInterval(interval: HalfOpenInterval<Time>) -> AnyForwardCollection<Fact> {
 		let filteredHistory = historyInTimeInterval(interval)
-		return AnyForwardCollection(factsAssertedInHistory(filteredHistory).values)
+		return AnyForwardCollection(sortedFactsAssertedInHistory(filteredHistory))
 	}
 
 	public var history: AnyForwardCollection<Event<Fact, Time>> {
@@ -172,7 +190,7 @@ public struct ArchiveEntity<Value: Archivable where Value: Equatable>: EntityTyp
 	}
 
 	public subscript(key: Fact.Key) -> Fact? {
-		return factsAssertedInHistory(history)[key]
+		return factsAssertedInHistory(history)[key].map { event in event.fact }
 	}
 }
 
@@ -217,12 +235,13 @@ extension ArchiveEntity: Archivable {
 
 		return [
 			"identifier": identifier,
-			"events": archivedEvents
+			"events": archivedEvents,
+			"time": creationTimestamp.coderRepresentation,
 		]
 	}
 }
 
-public struct ArchiveTransaction<Value: Archivable where Value: Equatable>: TransactionType {
+public struct ArchiveTransaction<Value: Archivable where Value: Hashable>: TransactionType {
 	public typealias Entity = ArchiveEntity<Value>
 
 	private var entitiesByIdentifier: [Entity.Identifier: Entity]
@@ -292,7 +311,7 @@ public struct ArchiveTransaction<Value: Archivable where Value: Equatable>: Tran
 	}
 }
 
-public final class ArchiveStore<Value: Archivable where Value: Equatable> {
+public final class ArchiveStore<Value: Archivable where Value: Hashable>: StoreType {
 	public typealias Transaction = ArchiveTransaction<Value>
 
 	public let storeURL: NSURL
@@ -305,18 +324,14 @@ public final class ArchiveStore<Value: Archivable where Value: Equatable> {
 
 		self.storeURL = storeURL
 
-		// Touch the file if it does not exist.
-		let handle = open(storeURL.fileSystemRepresentation, O_CREAT | O_RDWR | O_CLOEXEC)
-		if handle >= 0 {
-			close(handle)
-		} else {
+		guard let unarchivedObject = NSKeyedUnarchiver.unarchiveObjectWithFile(storeURL.path!) else {
 			archivedEntities = []
 			transactionTimestamp = 0
-			return nil
+			return
 		}
 
 		guard
-			let dictionary = NSKeyedUnarchiver.unarchiveObjectWithFile(storeURL.path!) as? NSDictionary,
+			let dictionary = unarchivedObject as? NSDictionary,
 			let entities = dictionary["entities"] as? NSArray,
 			let archivedTimestamp = dictionary["timestamp"],
 			let timestamp = Transaction.Entity.Time(coderRepresentation: archivedTimestamp)
@@ -343,12 +358,15 @@ public final class ArchiveStore<Value: Archivable where Value: Equatable> {
 			throw ArchiveStoreError<Value>.TransactionCommitConflict(attemptedTransaction: transaction)
 		}
 
-		defer {
-			transactionTimestamp++
-		}
-
+		transactionTimestamp++
 		archivedEntities = transaction.entities.map { $0.coderRepresentation }
-		if !NSKeyedArchiver.archiveRootObject(archivedEntities, toFile: storeURL.path!) {
+
+		let dictionary: NSDictionary = [
+			"entities": archivedEntities,
+			"timestamp": transactionTimestamp.coderRepresentation,
+		]
+
+		if !NSKeyedArchiver.archiveRootObject(dictionary, toFile: storeURL.path!) {
 			throw ArchiveStoreError<Value>.WriteError(storeURL: storeURL)
 		}
 	}
