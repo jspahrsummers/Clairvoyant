@@ -1,6 +1,6 @@
 The MIT License (MIT)
 
-Copyright (c) 2015 Justin Spahr-Summers
+Copyright (c) Justin Spahr-Summers
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+I am providing the code in this repository to you under an open source license. Because this is my personal repository, the license you receive to this code is from me (Justin Spahr-Summers), and not from my employer (Facebook).
